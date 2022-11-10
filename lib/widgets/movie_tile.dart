@@ -46,7 +46,7 @@ class MovieTile extends StatelessWidget {
                 child: Text(
                   movie!.name!,
                   overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
+                  style: const TextStyle(
                       color: Colors.white,
                       fontSize: 22,
                       fontWeight: FontWeight.w400),
@@ -54,7 +54,7 @@ class MovieTile extends StatelessWidget {
               ),
               Text(
                 movie!.rating.toString(),
-                style: TextStyle(
+                style: const TextStyle(
                   color: Colors.white,
                   fontSize: 22,
                 ),
@@ -65,7 +65,7 @@ class MovieTile extends StatelessWidget {
             padding: EdgeInsets.fromLTRB(0, height! * 0.02, 0, 0),
             child: Text(
               '${movie!.language!.toUpperCase()} | R: ${movie!.isAdult} | ${movie!.releaseDate}',
-              style: TextStyle(color: Colors.white, fontSize: 12),
+              style: const TextStyle(color: Colors.white, fontSize: 12),
             ),
           ),
           Container(
@@ -74,7 +74,7 @@ class MovieTile extends StatelessWidget {
               movie!.description!,
               maxLines: 9,
               overflow: TextOverflow.ellipsis,
-              style: TextStyle(color: Colors.white70, fontSize: 10),
+              style: const TextStyle(color: Colors.white70, fontSize: 10),
             ),
           ),
         ],

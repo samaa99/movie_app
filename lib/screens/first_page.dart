@@ -1,46 +1,37 @@
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/src/widgets/framework.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:movie_app/business_logic/movies_cubit.dart';
-import 'package:movie_app/controllers/main_page_data_controller.dart';
-import 'package:movie_app/models/main_page_data.dart';
 import 'package:movie_app/models/search_categories.dart';
 
+import '../business_logic/movies_cubit.dart';
 import '../models/movie.dart';
 import '../widgets/movie_tile.dart';
 
-final mainPageDataControllerProvider =
-    StateNotifierProvider<MainPageDataController, MainPageData>(
-        (ref) => MainPageDataController());
+class FirstPage extends StatefulWidget {
+  @override
+  State<FirstPage> createState() => _FirstPageState();
+}
 
-class MainPage extends ConsumerWidget {
+class _FirstPageState extends State<FirstPage> {
   double? _deviceWidth;
-  double? _deviceHeight;
-  List<Movie> _movies = [];
-
-  late MainPageDataController _mainPageDataController;
-  late MainPageData _mainPageData;
+  double? _deviceHieght;
   TextEditingController? _searchTextEditingController;
+  // List<Movie> _movies = [];
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    _deviceHeight = MediaQuery.of(context).size.height;
-    _deviceWidth = MediaQuery.of(context).size.width;
-    _mainPageDataController =
-        ref.watch(mainPageDataControllerProvider.notifier);
-    _mainPageData = ref.watch(mainPageDataControllerProvider);
-
-    _searchTextEditingController = TextEditingController();
-    _searchTextEditingController?.text = _mainPageData.searchText!;
-
-    //The same but with bloc
+  void initState() {
+    super.initState();
     BlocProvider.of<MoviesCubit>(context).getMovies();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    _deviceHieght = MediaQuery.of(context).size.height;
+    _deviceWidth = MediaQuery.of(context).size.width;
+    _searchTextEditingController = TextEditingController();
     return BlocBuilder<MoviesCubit, MoviesState>(
       builder: (BuildContext context, state) {
-        _movies = BlocProvider.of<MoviesCubit>(context).movies;
         return _buildUI();
       },
     );
@@ -52,7 +43,7 @@ class MainPage extends ConsumerWidget {
       resizeToAvoidBottomInset: false,
       backgroundColor: Colors.black,
       body: Container(
-        height: _deviceHeight,
+        height: _deviceHieght,
         width: _deviceWidth,
         child: Stack(
           alignment: Alignment.center,
@@ -67,7 +58,7 @@ class MainPage extends ConsumerWidget {
 
   Widget _backgroundWidgets() {
     return Container(
-      height: _deviceHeight,
+      height: _deviceHieght,
       width: _deviceWidth,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(10),
@@ -88,7 +79,7 @@ class MainPage extends ConsumerWidget {
 
   Widget _foregroundWidgets() {
     return Container(
-      padding: EdgeInsets.fromLTRB(0, (_deviceHeight! * 0.07), 0, 0),
+      padding: EdgeInsets.fromLTRB(0, (_deviceHieght! * 0.07), 0, 0),
       width: _deviceWidth! * 0.88,
       child: Column(
         mainAxisAlignment: MainAxisAlignment.end,
@@ -103,7 +94,7 @@ class MainPage extends ConsumerWidget {
 
   Widget _topBarWidget() {
     return Container(
-      height: _deviceHeight! * 0.08,
+      height: _deviceHieght! * 0.08,
       decoration: BoxDecoration(
         color: Colors.black54,
         borderRadius: BorderRadius.circular(20),
@@ -122,9 +113,9 @@ class MainPage extends ConsumerWidget {
   Widget _searchTextField() {
     return Container(
       width: _deviceWidth! * 0.5,
-      height: _deviceHeight! * 0.05,
+      height: _deviceHieght! * 0.05,
       child: TextField(
-        onSubmitted: (value) => _mainPageDataController.updateTextSearch(value),
+        onSubmitted: (value) {},
         controller: _searchTextEditingController,
         cursorColor: Colors.white24,
         style: const TextStyle(color: Colors.white),
@@ -148,7 +139,7 @@ class MainPage extends ConsumerWidget {
         Icons.menu,
         color: Colors.white24,
       ),
-      value: _mainPageData.searchCategory,
+      value: SearchCategories.popular,
       items: const [
         DropdownMenuItem(
           value: SearchCategories.popular,
@@ -172,16 +163,12 @@ class MainPage extends ConsumerWidget {
           ),
         ),
       ],
-      onChanged: (dynamic value) => value.toString().isNotEmpty
-          ? _mainPageDataController.updateSearchCategory(value!)
-          : null,
+      onChanged: (dynamic value) {},
     );
   }
 
   Widget _moviesListViewWidget() {
-    //The same using bloc
-    final List<Movie> movies = _movies;
-    // final List<Movie> movies = _mainPageData.movies!;
+    final List<Movie> movies = BlocProvider.of<MoviesCubit>(context).movies;
 
     if (movies.isNotEmpty) {
       return ListView.builder(
@@ -189,12 +176,12 @@ class MainPage extends ConsumerWidget {
         itemCount: movies.length,
         itemBuilder: (context, index) {
           return Padding(
-            padding: EdgeInsets.symmetric(vertical: _deviceHeight! * 0.01),
+            padding: EdgeInsets.symmetric(vertical: _deviceHieght! * 0.01),
             child: GestureDetector(
               onTap: () {},
               child: MovieTile(
                 movie: movies[index],
-                height: _deviceHeight! * 0.20,
+                height: _deviceHieght! * 0.20,
                 width: _deviceWidth! * 0.85,
               ),
             ),
