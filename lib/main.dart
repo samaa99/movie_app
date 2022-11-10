@@ -3,7 +3,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:movie_app/business_logic/movies_cubit.dart';
 import 'package:movie_app/repository/movie_repository.dart';
-import 'package:movie_app/screens/first_page.dart';
 import 'package:movie_app/screens/main_page.dart';
 import 'package:movie_app/screens/splash_page.dart';
 import 'package:movie_app/services/movies_services.dart';
