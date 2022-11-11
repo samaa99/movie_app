@@ -15,6 +15,10 @@ import '../widgets/movie_tile.dart';
 final mainPageDataControllerProvider =
     StateNotifierProvider<MainPageDataController, MainPageData>(
         (ref) => MainPageDataController());
+final moviePosterURLProvider = StateProvider<String?>((ref) {
+  final movies = ref.watch(mainPageDataControllerProvider).movies!;
+  return movies.isNotEmpty ? movies[0].posterURL() : null;
+});
 
 class MainPage extends ConsumerWidget {
   double? _deviceWidth;
@@ -23,6 +27,7 @@ class MainPage extends ConsumerWidget {
 
   late MainPageDataController _mainPageDataController;
   late MainPageData _mainPageData;
+  late var _selectedMoviePosterURL;
   TextEditingController? _searchTextEditingController;
 
   @override
@@ -32,19 +37,21 @@ class MainPage extends ConsumerWidget {
     _mainPageDataController =
         ref.watch(mainPageDataControllerProvider.notifier);
     _mainPageData = ref.watch(mainPageDataControllerProvider);
-
+    _selectedMoviePosterURL = ref.watch(moviePosterURLProvider);
     _searchTextEditingController = TextEditingController();
     _searchTextEditingController?.text = _mainPageData.searchText!;
 
     //The same but with bloc
-    BlocProvider.of<MoviesCubit>(context).getMovies();
-    return BlocBuilder<MoviesCubit, MoviesState>(
-      builder: (BuildContext context, state) {
-        _movies = BlocProvider.of<MoviesCubit>(context).movies;
-        return _buildUI();
-      },
-    );
-    // return _buildUI();
+    // BlocProvider.of<MoviesCubit>(context).getMovies();
+    // return BlocBuilder<MoviesCubit, MoviesState>(
+    //   builder: (BuildContext context, state) {
+    //     _movies = BlocProvider.of<MoviesCubit>(context).movies;
+    //     return _buildUI();
+    //   },
+    // );
+
+    //Using RiverPod
+    return _buildUI();
   }
 
   Widget _buildUI() {
@@ -66,24 +73,31 @@ class MainPage extends ConsumerWidget {
   }
 
   Widget _backgroundWidgets() {
-    return Container(
-      height: _deviceHeight,
-      width: _deviceWidth,
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(10),
-        image: const DecorationImage(
-          image: NetworkImage(
-              'https://cdn.shopify.com/s/files/1/2533/3248/products/00873Moana_Blackstone__Rounded_900x_38e8023b-7362-4809-adcc-af6f10bc2c62_grande.png?v=1633520171'),
-          fit: BoxFit.cover,
+    if (_selectedMoviePosterURL != null) {
+      return Container(
+        height: _deviceHeight,
+        width: _deviceWidth,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(10),
+          image: DecorationImage(
+            image: NetworkImage(_selectedMoviePosterURL),
+            fit: BoxFit.cover,
+          ),
         ),
-      ),
-      child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 15, sigmaY: 15),
-        child: Container(
-          decoration: BoxDecoration(color: Colors.black.withOpacity(0.2)),
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 15, sigmaY: 15),
+          child: Container(
+            decoration: BoxDecoration(color: Colors.black.withOpacity(0.2)),
+          ),
         ),
-      ),
-    );
+      );
+    } else {
+      return Container(
+        height: _deviceHeight,
+        width: _deviceWidth,
+        color: Colors.black,
+      );
+    }
   }
 
   Widget _foregroundWidgets() {
@@ -180,26 +194,45 @@ class MainPage extends ConsumerWidget {
 
   Widget _moviesListViewWidget() {
     //The same using bloc
-    final List<Movie> movies = _movies;
-    // final List<Movie> movies = _mainPageData.movies!;
+    // final List<Movie> movies = _movies;
+
+    //Using RiverPod
+    final List<Movie> movies = _mainPageData.movies!;
 
     if (movies.isNotEmpty) {
-      return ListView.builder(
-        shrinkWrap: true,
-        itemCount: movies.length,
-        itemBuilder: (context, index) {
-          return Padding(
-            padding: EdgeInsets.symmetric(vertical: _deviceHeight! * 0.01),
-            child: GestureDetector(
-              onTap: () {},
-              child: MovieTile(
-                movie: movies[index],
-                height: _deviceHeight! * 0.20,
-                width: _deviceWidth! * 0.85,
-              ),
-            ),
-          );
+      return NotificationListener(
+        onNotification: (onScrollNotification) {
+          if (onScrollNotification is ScrollEndNotification) {
+            final before = onScrollNotification.metrics.extentBefore;
+            final max = onScrollNotification.metrics.maxScrollExtent;
+            if (before == max) {
+              _mainPageDataController.getMovies();
+              return true;
+            }
+            return false;
+          }
+          return false;
         },
+        child: ListView.builder(
+          shrinkWrap: true,
+          itemCount: movies.length,
+          itemBuilder: (context, index) {
+            return Padding(
+              padding: EdgeInsets.symmetric(vertical: _deviceHeight! * 0.01),
+              child: GestureDetector(
+                onTap: () {
+                  print('GestureDetector');
+                  _selectedMoviePosterURL = movies[index].posterURL();
+                },
+                child: MovieTile(
+                  movie: movies[index],
+                  height: _deviceHeight! * 0.20,
+                  width: _deviceWidth! * 0.85,
+                ),
+              ),
+            );
+          },
+        ),
       );
     } else {
       return const Center(
