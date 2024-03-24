@@ -2,9 +2,7 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/src/widgets/framework.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:movie_app/business_logic/movies_cubit.dart';
 import 'package:movie_app/controllers/main_page_data_controller.dart';
 import 'package:movie_app/models/main_page_data.dart';
 import 'package:movie_app/models/search_categories.dart';
